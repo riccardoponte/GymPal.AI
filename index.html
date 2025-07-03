@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GymPal AI</title>
+  <title>GymPal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -251,7 +251,7 @@ Emetti un singolo oggetto JSON che sia conforme alla seguente interfaccia TypeSc
 
 \`\`\`typescript
 interface WorkoutPlan {
-  name: string; // es., "Giorno di Spinta", "Allenamento Gambe", "Full Body A"
+  name: string; // es., "Upper Body", "Allenamento Gambe", "Full Body A"
   exercises: {
     name: string; // es., "Panca Piana", "Squat", "Curl Bicipiti"
     targetSets: number; // Il numero di serie, es., 3
@@ -281,7 +281,7 @@ Sei un personal trainer di fama mondiale e un esperto nella creazione di program
 
 L'utente fornirà i seguenti dettagli:
 - Nome del Piano: Il tipo di allenamento desiderato (es. "Giorno di Spinta", "Allenamento Gambe e Glutei", "Full Body per Principianti").
-- Obiettivo: L'obiettivo primario dell'allenamento (es. "Ipertrofia", "Forza", "Perdita di Grasso").
+- Obiettivo: L'obiettivo primario dell'allenamento (es. "Ipertrofia", "Forza", "Dimagrimento").
 - Livello di esperienza: Il livello di fitness dell'utente (es. "Principiante", "Intermedio", "Avanzato").
 - Note aggiuntive: Qualsiasi richiesta specifica, attrezzatura disponibile o limitazioni.
 
@@ -518,7 +518,7 @@ REGOLE FONDAMENTALI:
     
     const WorkoutGenerator = ({ onPlanGenerated }) => {
         const [formData, setFormData] = useState({
-            name: 'Giorno di Spinta',
+            name: 'Upper Body',
             goal: 'hypertrophy',
             level: 'intermediate',
             notes: ''
@@ -555,11 +555,11 @@ REGOLE FONDAMENTALI:
         };
 
         return React.createElement('div', { className: 'bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md space-y-4' },
-            React.createElement('h3', { className: 'font-semibold text-lg text-gray-800 dark:text-white' }, 'Genera con Testo'),
+            React.createElement('h3', { className: 'font-semibold text-lg text-gray-800 dark:text-white' }, 'Genera con testo'),
             error && React.createElement('div', { className: "p-3 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800", role: "alert" }, error),
             React.createElement('form', { onSubmit: handleSubmit, className: 'space-y-4' },
                 React.createElement('div', null,
-                    React.createElement('label', { htmlFor: 'plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome / Tipo di Piano'),
+                    React.createElement('label', { htmlFor: 'plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome'),
                     React.createElement('input', { type: 'text', name: 'name', id: 'plan-name', value: formData.name, onChange: handleInputChange, required: true, placeholder: 'Es. Allenamento Gambe', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-4' },
@@ -568,7 +568,7 @@ REGOLE FONDAMENTALI:
                         React.createElement('select', { name: 'goal', id: 'goal', value: formData.goal, onChange: handleInputChange, className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' },
                             React.createElement('option', { value: 'hypertrophy' }, 'Ipertrofia'),
                             React.createElement('option', { value: 'strength' }, 'Forza'),
-                            React.createElement('option', { value: 'fat_loss' }, 'Perdita Grasso')
+                            React.createElement('option', { value: 'fat_loss' }, 'Dimagrimento')
                         )
                     ),
                     React.createElement('div', null,
@@ -581,12 +581,12 @@ REGOLE FONDAMENTALI:
                     )
                 ),
                 React.createElement('div', null,
-                    React.createElement('label', { htmlFor: 'notes', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Note Aggiuntive'),
+                    React.createElement('label', { htmlFor: 'notes', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Note'),
                     React.createElement('textarea', { name: 'notes', id: 'notes', rows: '2', value: formData.notes, onChange: handleInputChange, placeholder: 'Es. Ho solo manubri e una panca', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
                 ),
                 React.createElement('button', { type: 'submit', disabled: isGenerating, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-white bg-blue-600 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors' },
                     isGenerating ? React.createElement(Spinner, { className: 'h-5 w-5 text-white' }) : React.createElement(SparklesIcon, { className: 'h-5 w-5' }),
-                    isGenerating ? 'Generazione...' : 'Genera Piano'
+                    isGenerating ? 'Generazione...' : 'Genera'
                 )
             )
         );
@@ -595,7 +595,7 @@ REGOLE FONDAMENTALI:
     const ManualPlanBuilder = ({ onPlanAdded }) => {
         const [planName, setPlanName] = useState('');
         const [exercises, setExercises] = useState([
-            { id: Date.now(), name: '', targetSets: 3, targetReps: '8-12', restTime: 60, description: '' }
+            { id: Date.now(), name: '', targetSets: 3, targetReps: '', restTime: 60, description: '' }
         ]);
 
         const handleExerciseChange = (index, field, value) => {
@@ -607,7 +607,7 @@ REGOLE FONDAMENTALI:
         const addExercise = () => {
             setExercises([
                 ...exercises,
-                { id: Date.now(), name: '', targetSets: 3, targetReps: '8-12', restTime: 60, description: '' }
+                { id: Date.now(), name: '', targetSets: 3, targetReps: '', restTime: 60, description: '' }
             ]);
         };
 
@@ -636,11 +636,11 @@ REGOLE FONDAMENTALI:
         };
 
         return React.createElement('div', { className: 'space-y-6' },
-            React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Crea Piano Manuale'),
+            React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Crea piano'),
             React.createElement('div', { className: 'bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md space-y-4' },
                 React.createElement('div', null,
-                    React.createElement('label', { htmlFor: 'manual-plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome del Piano'),
-                    React.createElement('input', { type: 'text', id: 'manual-plan-name', value: planName, onChange: e => setPlanName(e.target.value), placeholder: 'Es. Full Body A', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
+                    React.createElement('label', { htmlFor: 'manual-plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome'),
+                    React.createElement('input', { type: 'text', id: 'manual-plan-name', value: planName, onChange: e => setPlanName(e.target.value), placeholder: 'Es. Full Body', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
                 ),
                 React.createElement('div', { className: 'space-y-4' },
                     exercises.map((ex, index) => React.createElement('div', { key: ex.id, className: 'p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-3' },
@@ -648,7 +648,7 @@ REGOLE FONDAMENTALI:
                             React.createElement('p', { className: 'font-semibold text-gray-800 dark:text-white' }, `Esercizio ${index + 1}`),
                             exercises.length > 1 && React.createElement('button', { onClick: () => removeExercise(index), className: 'p-1 text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full' }, React.createElement(TrashIcon, { className: 'h-4 w-4' }))
                         ),
-                        React.createElement('input', { type: 'text', value: ex.name, onChange: e => handleExerciseChange(index, 'name', e.target.value), placeholder: 'Nome Esercizio', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
+                        React.createElement('input', { type: 'text', value: ex.name, onChange: e => handleExerciseChange(index, 'name', e.target.value), placeholder: 'Nome', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
                         React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
                             React.createElement('input', { type: 'number', value: ex.targetSets, onChange: e => handleExerciseChange(index, 'targetSets', e.target.value), placeholder: 'Serie', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
                             React.createElement('input', { type: 'text', value: ex.targetReps, onChange: e => handleExerciseChange(index, 'targetReps', e.target.value), placeholder: 'Rep', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
@@ -657,10 +657,10 @@ REGOLE FONDAMENTALI:
                         React.createElement('textarea', { value: ex.description, onChange: e => handleExerciseChange(index, 'description', e.target.value), placeholder: 'Note (opzionale)', rows: 1, className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' })
                     )),
                     React.createElement('button', { onClick: addExercise, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-gray-700 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-600' },
-                        React.createElement(PlusCircleIcon, { className: 'h-5 w-5' }), 'Aggiungi Esercizio'
+                        React.createElement(PlusCircleIcon, { className: 'h-5 w-5' }), 'Aggiungi'
                     )
                 ),
-                React.createElement('button', { onClick: handleSave, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700' }, 'Salva Piano')
+                React.createElement('button', { onClick: handleSave, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700' }, 'Salva')
             )
         );
     };
@@ -744,14 +744,14 @@ REGOLE FONDAMENTALI:
         return React.createElement('div', { className: "space-y-8 pt-8" },
             React.createElement('div', { className: 'text-center' },
                 React.createElement(LogoIcon, { className: 'h-24 w-24 mx-auto text-blue-600 dark:text-blue-400' }),
-                React.createElement('h1', { className: 'mt-4 text-4xl font-bold tracking-tight text-gray-800 dark:text-white' }, 'GymPal AI'),
-                React.createElement('p', { className: 'mt-2 text-lg text-gray-500 dark:text-gray-400' }, 'Il tuo compagno di allenamento intelligente.')
+                React.createElement('h1', { className: 'mt-4 text-4xl font-bold tracking-tight text-gray-800 dark:text-white' }, 'GymPal'),
+                React.createElement('p', { className: 'mt-2 text-lg text-gray-500 dark:text-gray-400' }, '')
             ),
             React.createElement('input', { type: "file", accept: "image/*", ref: fileInputRef, onChange: handleFileChange, className: "hidden" }),
             error && React.createElement('div', { className: "p-4 text-sm text-red-700 bg-red-100 rounded-lg dark:bg-red-200 dark:text-red-800", role: "alert" }, error),
             
             React.createElement('div', { className: 'space-y-4' },
-                React.createElement('h2', { className: 'text-2xl font-semibold text-gray-700 dark:text-gray-300' }, 'Crea con l\'IA'),
+                React.createElement('h2', { className: 'text-2xl font-semibold text-gray-700 dark:text-gray-300' }, ''),
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-6' },
                     React.createElement(WorkoutGenerator, { onPlanGenerated: onAddPlan }),
                     React.createElement('div', { 
@@ -759,14 +759,14 @@ REGOLE FONDAMENTALI:
                         onClick: triggerFileUpload 
                     },
                         isUploading ? React.createElement(Spinner, { className: 'h-10 w-10 text-blue-500' }) : React.createElement(CameraIcon, { className: 'h-10 w-10 text-gray-400' }),
-                        React.createElement('h3', { className: 'mt-4 font-semibold text-lg text-gray-800 dark:text-white' }, isUploading ? 'Analisi in corso...' : 'Carica da Immagine'),
+                        React.createElement('h3', { className: 'mt-4 font-semibold text-lg text-gray-800 dark:text-white' }, isUploading ? 'Analisi in corso...' : 'Carica una foto'),
                         React.createElement('p', { className: 'mt-1 text-sm text-gray-500 dark:text-gray-400' }, isUploading ? 'L\'IA sta digitalizzando la tua scheda...' : "Hai già una scheda? Scatta una foto e caricala.")
                     )
                 )
             ),
 
             React.createElement('div', { className: "space-y-4" },
-                React.createElement('h2', { className: "text-2xl font-semibold text-gray-700 dark:text-gray-300" }, 'I Miei Piani'),
+                React.createElement('h2', { className: "text-2xl font-semibold text-gray-700 dark:text-gray-300" }, 'Galleria'),
                 plans.length > 0 ? (
                     React.createElement('ul', { className: 'space-y-3' },
                         plans.map(plan => {
@@ -875,7 +875,7 @@ REGOLE FONDAMENTALI:
         };
 
         return React.createElement('div', { className: 'space-y-6' },
-            React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Diario Allenamenti'),
+            React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Storico'),
             completedSessions.length > 0 ? (
                 React.createElement('ul', { className: 'space-y-4' },
                     completedSessions.map(session => (
