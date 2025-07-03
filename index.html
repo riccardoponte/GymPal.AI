@@ -503,6 +503,10 @@ REGOLE FONDAMENTALI:
             );
         }, []);
 
+        const deleteSession = useCallback((sessionId) => {
+            setSessions(prevSessions => prevSessions.filter(s => s.id !== sessionId));
+        }, []);
+
         const getSessionById = useCallback((sessionId) => {
             return sessions.find(s => s.id === sessionId);
         }, [sessions]);
@@ -510,7 +514,7 @@ REGOLE FONDAMENTALI:
 
         return {
             plans, sessions, loading, addPlan, updatePlan, deletePlan,
-            startWorkoutSession, updateWorkoutSession, getSessionById,
+            startWorkoutSession, updateWorkoutSession, getSessionById, deleteSession
         };
     };
 
@@ -595,7 +599,7 @@ REGOLE FONDAMENTALI:
     const ManualPlanBuilder = ({ onPlanAdded }) => {
         const [planName, setPlanName] = useState('');
         const [exercises, setExercises] = useState([
-            { id: Date.now(), name: '', targetSets: 3, targetReps: '', restTime: 60, description: '' }
+            { id: Date.now(), name: '', targetSets: '', targetReps: '', restTime: '', description: '' }
         ]);
 
         const handleExerciseChange = (index, field, value) => {
@@ -607,7 +611,7 @@ REGOLE FONDAMENTALI:
         const addExercise = () => {
             setExercises([
                 ...exercises,
-                { id: Date.now(), name: '', targetSets: 3, targetReps: '', restTime: 60, description: '' }
+                { id: Date.now(), name: '', targetSets: '', targetReps: '', restTime: '', description: '' }
             ]);
         };
 
@@ -617,10 +621,18 @@ REGOLE FONDAMENTALI:
         };
 
         const handleSave = () => {
-            if (!planName.trim() || exercises.some(ex => !ex.name.trim())) {
-                alert("Per favore, inserisci un nome per il piano e per ogni esercizio.");
+            const isIncomplete = exercises.some(ex => 
+                !ex.name.trim() || 
+                String(ex.targetSets).trim() === '' || 
+                !ex.targetReps.trim() || 
+                String(ex.restTime).trim() === ''
+            );
+
+            if (!planName.trim() || isIncomplete) {
+                alert("Per favore, inserisci un nome per il piano e compila tutti i campi (nome, serie, rep, recupero) per ogni esercizio.");
                 return;
             }
+
             const newPlan = {
                 id: `plan_${Date.now()}`,
                 name: planName,
@@ -639,8 +651,8 @@ REGOLE FONDAMENTALI:
             React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Crea piano'),
             React.createElement('div', { className: 'bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md space-y-4' },
                 React.createElement('div', null,
-                    React.createElement('label', { htmlFor: 'manual-plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome'),
-                    React.createElement('input', { type: 'text', id: 'manual-plan-name', value: planName, onChange: e => setPlanName(e.target.value), placeholder: 'Es. Full Body', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
+                    React.createElement('label', { htmlFor: 'manual-plan-name', className: 'block text-sm font-medium text-gray-700 dark:text-gray-300' }, 'Nome del Piano'),
+                    React.createElement('input', { type: 'text', id: 'manual-plan-name', value: planName, onChange: e => setPlanName(e.target.value), placeholder: 'Es. Full Body A', className: 'mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm' })
                 ),
                 React.createElement('div', { className: 'space-y-4' },
                     exercises.map((ex, index) => React.createElement('div', { key: ex.id, className: 'p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-3' },
@@ -648,19 +660,23 @@ REGOLE FONDAMENTALI:
                             React.createElement('p', { className: 'font-semibold text-gray-800 dark:text-white' }, `Esercizio ${index + 1}`),
                             exercises.length > 1 && React.createElement('button', { onClick: () => removeExercise(index), className: 'p-1 text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full' }, React.createElement(TrashIcon, { className: 'h-4 w-4' }))
                         ),
-                        React.createElement('input', { type: 'text', value: ex.name, onChange: e => handleExerciseChange(index, 'name', e.target.value), placeholder: 'Nome', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
+                        React.createElement('input', { type: 'text', value: ex.name, onChange: e => handleExerciseChange(index, 'name', e.target.value), placeholder: 'Nome Esercizio', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
                         React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
-                            React.createElement('input', { type: 'number', value: ex.targetSets, onChange: e => handleExerciseChange(index, 'targetSets', e.target.value), placeholder: 'Serie', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
-                            React.createElement('input', { type: 'text', value: ex.targetReps, onChange: e => handleExerciseChange(index, 'targetReps', e.target.value), placeholder: 'Rep', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
-                            React.createElement('input', { type: 'number', value: ex.restTime, onChange: e => handleExerciseChange(index, 'restTime', e.target.value), placeholder: 'Recupero (s)', className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' })
+                            React.createElement('div', { className: 'flex items-center justify-center gap-1' },
+                                React.createElement('button', { onClick: () => handleExerciseChange(index, 'targetSets', Math.max(1, (Number(ex.targetSets) || 1) - 1)), className: 'p-1 text-gray-400 hover:text-red-500' }, React.createElement(MinusCircleIcon, { className: 'h-5 w-5' })),
+                                React.createElement('input', { type: 'number', value: ex.targetSets, onChange: e => handleExerciseChange(index, 'targetSets', e.target.value), placeholder: 'Serie', className: 'w-full text-center block rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
+                                React.createElement('button', { onClick: () => handleExerciseChange(index, 'targetSets', (Number(ex.targetSets) || 0) + 1), className: 'p-1 text-gray-400 hover:text-green-500' }, React.createElement(PlusCircleIcon, { className: 'h-5 w-5' }))
+                            ),
+                            React.createElement('input', { type: 'text', value: ex.targetReps, onChange: e => handleExerciseChange(index, 'targetReps', e.target.value), placeholder: 'Rep (es. 8-12)', className: 'block w-full text-center rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' }),
+                            React.createElement('input', { type: 'number', value: ex.restTime, onChange: e => handleExerciseChange(index, 'restTime', e.target.value), placeholder: 'Recupero (s)', className: 'block w-full text-center rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' })
                         ),
                         React.createElement('textarea', { value: ex.description, onChange: e => handleExerciseChange(index, 'description', e.target.value), placeholder: 'Note (opzionale)', rows: 1, className: 'block w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 shadow-sm sm:text-sm' })
                     )),
                     React.createElement('button', { onClick: addExercise, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-gray-700 rounded-lg hover:bg-blue-100 dark:hover:bg-gray-600' },
-                        React.createElement(PlusCircleIcon, { className: 'h-5 w-5' }), 'Aggiungi'
+                        React.createElement(PlusCircleIcon, { className: 'h-5 w-5' }), 'Aggiungi Esercizio'
                     )
                 ),
-                React.createElement('button', { onClick: handleSave, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700' }, 'Salva')
+                React.createElement('button', { onClick: handleSave, className: 'w-full flex justify-center items-center gap-2 px-4 py-2 text-white bg-green-600 rounded-lg shadow-md hover:bg-green-700' }, 'Salva Piano')
             )
         );
     };
@@ -782,7 +798,7 @@ REGOLE FONDAMENTALI:
                                                     type: 'text',
                                                     value: editingPlanName,
                                                     onChange: (e) => setEditingPlanName(e.target.value),
-                                                    onBlur: handleCancelEdit,
+                                                    onBlur: () => handleSaveClick(plan.id),
                                                     onKeyDown: (e) => {
                                                         if (e.key === 'Enter') handleSaveClick(plan.id);
                                                         if (e.key === 'Escape') handleCancelEdit();
@@ -853,7 +869,9 @@ REGOLE FONDAMENTALI:
         );
     };
 
-    const HistoryPage = ({ sessions }) => {
+    const HistoryPage = ({ sessions, onDeleteSession }) => {
+        const [expandedSessionId, setExpandedSessionId] = useState(null);
+
         const completedSessions = sessions
             .filter(session => session.endTime)
             .sort((a, b) => b.startTime - a.startTime);
@@ -878,19 +896,66 @@ REGOLE FONDAMENTALI:
             React.createElement('h1', { className: 'text-3xl font-bold text-gray-800 dark:text-white' }, 'Storico'),
             completedSessions.length > 0 ? (
                 React.createElement('ul', { className: 'space-y-4' },
-                    completedSessions.map(session => (
-                        React.createElement('li', { key: session.id, className: 'bg-white dark:bg-gray-800 rounded-xl shadow p-4 flex flex-col items-center space-y-2 transition-shadow hover:shadow-md' },
-                            React.createElement('div', { className: 'p-2 bg-gray-100 dark:bg-gray-700 rounded-full' }, React.createElement(ClockIcon)),
-                            React.createElement('div', { className: 'text-center' },
-                                React.createElement('p', { className: 'font-bold text-gray-800 dark:text-white' }, session.planName),
-                                React.createElement('p', { className: 'text-sm text-gray-500 dark:text-gray-400' }, formatDate(session.startTime))
+                    completedSessions.map(session => {
+                        const isExpanded = expandedSessionId === session.id;
+                        return React.createElement('li', { 
+                            key: session.id, 
+                            className: 'bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-shadow hover:shadow-lg'
+                        },
+                            React.createElement('div', {
+                                className: 'p-4 cursor-pointer relative',
+                                onClick: () => setExpandedSessionId(isExpanded ? null : session.id)
+                            },
+                                React.createElement('div', { className: 'flex justify-between items-start gap-4' },
+                                    React.createElement('div', { className: 'flex items-start gap-3 flex-grow min-w-0' },
+                                        React.createElement(ChevronDownIcon, { className: `h-5 w-5 mt-1 text-gray-500 dark:text-gray-400 transition-transform duration-200 flex-shrink-0 ${isExpanded ? 'rotate-180' : ''}` }),
+                                        React.createElement('div', { className: 'min-w-0' },
+                                            React.createElement('p', { className: 'font-bold text-gray-800 dark:text-white truncate', title: session.planName }, session.planName),
+                                            React.createElement('p', { className: 'text-sm text-gray-500 dark:text-gray-400' }, formatDate(session.startTime))
+                                        )
+                                    ),
+                                    React.createElement('div', { className: 'text-right flex-shrink-0' },
+                                        React.createElement('p', { className: 'text-xs font-semibold text-gray-700 dark:text-gray-300' }, 'Durata'),
+                                        React.createElement('p', { className: 'text-sm text-gray-500 dark:text-gray-400' }, formatDuration(session.startTime, session.endTime))
+                                    )
+                                ),
+                                React.createElement('button', {
+                                    onClick: (e) => {
+                                        e.stopPropagation();
+                                        if (window.confirm(`Sei sicuro di voler eliminare la sessione del ${formatDate(session.startTime)}?`)) {
+                                            onDeleteSession(session.id);
+                                        }
+                                    },
+                                    className: 'absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full',
+                                    'aria-label': 'Elimina sessione'
+                                },
+                                    React.createElement(TrashIcon, { className: 'h-4 w-4' })
+                                )
                             ),
-                            React.createElement('div', { className: 'text-center mt-1' },
-                                React.createElement('p', { className: 'text-xs font-semibold text-gray-700 dark:text-gray-300' }, 'Durata'),
-                                React.createElement('p', { className: 'text-sm text-gray-500 dark:text-gray-400' }, formatDuration(session.startTime, session.endTime))
+                            isExpanded && React.createElement('div', { className: 'pb-4 px-4 pl-12 border-t border-gray-200 dark:border-gray-700' },
+                                React.createElement('h4', { className: 'mt-3 mb-2 text-sm font-semibold text-gray-600 dark:text-gray-300' }, 'Esercizi Svolti:'),
+                                React.createElement('ul', { className: 'space-y-3' },
+                                    session.exercises.map((ex, index) => (
+                                        React.createElement('li', { key: index, className: 'text-sm' },
+                                            React.createElement('p', { className: 'font-semibold text-gray-800 dark:text-white' }, ex.name),
+                                            React.createElement('ul', { className: 'pl-4 mt-1 space-y-1 list-disc list-inside' },
+                                                ex.sets.filter(s => s.completed).length > 0 
+                                                ? ex.sets.filter(s => s.completed).map((s, s_index) => (
+                                                    React.createElement('li', { key: s.id || s_index, className: 'text-xs text-gray-600 dark:text-gray-400' },
+                                                        `Serie ${ex.sets.findIndex(set => set.id === s.id) + 1}: `,
+                                                        React.createElement('span', {className: 'font-medium text-gray-700 dark:text-gray-300'}, `${s.reps ?? '-'} rip`),
+                                                        ` @ `,
+                                                        React.createElement('span', {className: 'font-medium text-gray-700 dark:text-gray-300'}, `${s.weight ?? '-'} kg`)
+                                                    )
+                                                ))
+                                                : React.createElement('li', { className: 'text-xs text-gray-500 italic' }, 'Nessuna serie completata.')
+                                            )
+                                        )
+                                    ))
+                                )
                             )
-                        )
-                    ))
+                        );
+                    })
                 )
             ) : (
                 React.createElement('div', { className: 'text-center py-10 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg mt-6' },
@@ -1380,7 +1445,7 @@ REGOLE FONDAMENTALI:
     // ===== APP ROOT =====
     const App = () => {
         const ACTIVE_SESSION_ID_KEY = 'gym-pal-ai-active-session-id';
-        const { plans, sessions, addPlan, updatePlan, deletePlan, startWorkoutSession, updateWorkoutSession, getSessionById, loading } = useWorkoutStore();
+        const { plans, sessions, addPlan, updatePlan, deletePlan, startWorkoutSession, updateWorkoutSession, getSessionById, loading, deleteSession } = useWorkoutStore();
         const [activeSessionId, setActiveSessionId] = useState(null);
         const [activeView, setActiveView] = useState('dashboard');
 
@@ -1444,7 +1509,7 @@ REGOLE FONDAMENTALI:
                         }
                     });
                 case 'history':
-                    return React.createElement(HistoryPage, { sessions: sessions });
+                    return React.createElement(HistoryPage, { sessions: sessions, onDeleteSession: deleteSession });
                 default:
                     return React.createElement(Dashboard, { plans: plans, onAddPlan: addPlan, onUpdatePlan: updatePlan, onDeletePlan: deletePlan, onStartWorkout: handleStartWorkout });
             }
