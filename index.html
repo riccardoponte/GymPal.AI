@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitAI - AI Workout Logger</title>
+    <title>GymBro - AI Workout Logger</title>
     <style>
         * {
             margin: 0;
@@ -511,16 +511,16 @@
     <div class="app-container">
         <!-- Home Screen -->
         <div id="home-screen" class="screen active">
-            <div class="header"><div style="width: 70px;"></div><h1>FitAI</h1><div style="width: 70px;"></div></div>
+            <div class="header"><div style="width: 70px;"></div><h1>GymBro</h1><div style="width: 70px;"></div></div>
             <div class="content">
                 <h2 style="margin-bottom: 16px; font-size: 22px;">Statistiche</h2>
                 <div class="stats-grid">
-                    <div class="stat-card"><h3>Workout Totali</h3><div class="value" id="total-workouts">0</div></div>
+                    <div class="stat-card"><h3>Workout totali</h3><div class="value" id="total-workouts">0</div></div>
                     <div class="stat-card"><h3>Questa Settimana</h3><div class="value" id="week-workouts">0</div></div>
                 </div>
-                <h2 style="margin-bottom: 16px; font-size: 22px;">Azioni Rapide</h2>
-                <button class="btn" onclick="showScreen('workout-screen')">Aggiungi Workout</button>
-                <h2 style="margin-bottom: 16px; font-size: 22px;">Workout Recenti</h2>
+                <h2 style="margin-bottom: 16px; font-size: 22px;">Azioni rapide</h2>
+                <button class="btn" onclick="showScreen('workout-screen')">Aggiungi workout</button>
+                <h2 style="margin-bottom: 16px; font-size: 22px;">Workout recenti</h2>
                 <div id="recent-workouts"></div>
             </div>
         </div>
@@ -540,7 +540,7 @@
                 
                 <div id="manual-tab">
                     <div class="form-group">
-                        <label>Nome Workout</label>
+                        <label>Nome workout</label>
                         <input type="text" class="form-input" id="workout-name" placeholder="es. Sessione di Forza">
                     </div>
                     <h3 style="margin: 24px 0 16px;">Esercizi</h3>
@@ -570,7 +570,7 @@
 
         <!-- Diary Screen -->
         <div id="diary-screen" class="screen">
-            <div class="header"><button class="header-btn" onclick="showScreen('home-screen')">← Indietro</button><h1>Diario Allenamenti</h1><div style="width: 70px;"></div></div>
+            <div class="header"><button class="header-btn" onclick="showScreen('home-screen')">← Indietro</button><h1>Diario</h1><div style="width: 70px;"></div></div>
             <div class="content"><div id="workout-history"></div></div>
         </div>
 
@@ -625,7 +625,7 @@
         // workout = { id, name, isTemplate, exercises: [ { name, note, rest, series: [ {reps, weight, note}, ... ] } ] }
         // completedWorkout = { ...workout, date, duration, performance: {'exIdx-setIdx': {reps, weight, note}} }
         
-        const DB_KEY = 'fitai_workouts_it_v2';
+        const DB_KEY = 'GymBro_workouts_it_v2';
         const GEMINI_API_KEY = 'AIzaSyAUpMnG760HSOV7rah2UwkOajoH3aD4OFs';
         let workouts = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
         let currentWorkout = null, editingWorkoutId = null; 
@@ -697,7 +697,7 @@
             editingWorkoutId = workoutId;
             showScreen('workout-screen');
             setWorkoutTab('manual');
-            document.getElementById('workout-form-title').textContent = 'Modifica Workout';
+            document.getElementById('workout-form-title').textContent = 'Modifica workout';
             document.getElementById('workout-name').value = workout.name;
             renderExerciseBuilder(workout.exercises);
         }
@@ -741,7 +741,7 @@
             container.innerHTML = exercises.map((ex, exIdx) => `
                 <div class="exercise-builder-card" data-ex-index="${exIdx}">
                     <div class="exercise-builder-header"><h4>${ex.name}</h4><button class="remove-btn" onclick="removeExerciseFromBuilder(${exIdx})">×</button></div>
-                    <div class="form-group"><input type="text" class="form-input" placeholder="Note Esercizio (opzionale)" value="${ex.note || ''}"></div>
+                    <div class="form-group"><input type="text" class="form-input" placeholder="Note (opzionale)" value="${ex.note || ''}"></div>
                     <div class="form-group"><label>Recupero (secondi)</label><input type="number" class="form-input" value="${ex.rest || 60}"></div>
                     <div class="series-list">
                         <div class="series-header"><span></span><span>Rep</span><span>kg</span><span></span></div>
