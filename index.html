@@ -541,12 +541,12 @@
                 <div id="manual-tab">
                     <div class="form-group">
                         <label>Nome workout</label>
-                        <input type="text" class="form-input" id="workout-name" placeholder="es. Sessione di Forza">
+                        <input type="text" class="form-input" id="workout-name" placeholder="es. Sessione di forza">
                     </div>
                     <h3 style="margin: 24px 0 16px;">Esercizi</h3>
                     <div id="exercise-list-builder"></div>
                     <div style="display: flex; gap: 10px; margin-top: 16px;">
-                        <input type="text" class="form-input" id="new-exercise-name" placeholder="Nome Nuovo Esercizio">
+                        <input type="text" class="form-input" id="new-exercise-name" placeholder="Nome nuovo esercizio">
                         <button class="btn btn-secondary" onclick="addExerciseToBuilder()" style="width: auto; margin-bottom: 0; flex-shrink: 0;">Aggiungi</button>
                     </div>
                 </div>
@@ -576,7 +576,7 @@
 
         <!-- Workout Detail Screen -->
         <div id="detail-screen" class="screen">
-            <div class="header"><button class="header-btn" onclick="goBack()">← Indietro</button><h1>Dettagli Workout</h1><button class="header-btn" id="start-workout-btn" onclick="startLiveWorkout()">Inizia</button></div>
+            <div class="header"><button class="header-btn" onclick="goBack()">← Indietro</button><h1>Dettagli workout</h1><button class="header-btn" id="start-workout-btn" onclick="startLiveWorkout()">Inizia</button></div>
             <div class="content"><div id="workout-detail-content"></div></div>
         </div>
 
@@ -782,7 +782,7 @@
 
         function resetWorkoutForm() {
             editingWorkoutId = null;
-            document.getElementById('workout-form-title').textContent = 'Crea Workout';
+            document.getElementById('workout-form-title').textContent = 'Crea workout';
             document.getElementById('workout-name').value = '';
             renderExerciseBuilder([]);
             setWorkoutTab('manual');
