@@ -635,10 +635,49 @@
         let timerInterval = null, restTimerInterval = null;
         let isResting = false;
         let currentScreen = 'home-screen', previousScreen = 'home-screen';
+        let restAudio = null;
         
-        document.addEventListener('DOMContentLoaded', () => updateAllScreens());
+        document.addEventListener('DOMContentLoaded', () => {
+    updateAllScreens();
+    initializeAudio();
+});
         
-        function updateAllScreens() {
+        function initializeAudio() {
+    try {
+        // Crea un beep audio sintetizzato
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const createBeep = (frequency, duration) => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = frequency;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
+        };
+        
+        restAudio = {
+            play: () => {
+                // Suona 3 beep consecutivi
+                createBeep(800, 0.2);
+                setTimeout(() => createBeep(800, 0.2), 300);
+                setTimeout(() => createBeep(1000, 0.4), 600);
+            }
+        };
+    } catch (error) {
+        console.log('Audio non supportato:', error);
+        restAudio = { play: () => {} }; // Fallback silenzioso
+    }
+}
+
+function updateAllScreens() {
             updateStats();
             renderRecentWorkouts();
             renderWorkoutHistory();
@@ -891,9 +930,37 @@
             modal.classList.remove('hidden'); updateLiveWorkoutDisplay();
             let timeLeft = duration; timer.textContent = new Date(timeLeft*1000).toISOString().substr(14,5);
             if (restTimerInterval) clearInterval(restTimerInterval);
-            restTimerInterval = setInterval(() => { timeLeft--; timer.textContent = new Date(timeLeft*1000).toISOString().substr(14,5); if (timeLeft <= 0) skipRest(); }, 1000);
+            restTimerInterval = setInterval(() => { 
+                timeLeft--; 
+                timer.textContent = new Date(timeLeft*1000).toISOString().substr(14,5); 
+                
+                // Beep negli ultimi 3 secondi
+                if (timeLeft <= 3 && timeLeft > 0 && restAudio) {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    oscillator.frequency.value = 600;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                }
+                
+                if (timeLeft <= 0) {
+                    if (restAudio) restAudio.play();
+                    setTimeout(skipRest, 1000);
+                }
+            }, 1000);
         }
-        function skipRest() { if (restTimerInterval) clearInterval(restTimerInterval); isResting=false; document.getElementById('rest-timer-modal').classList.add('hidden'); nextSet(); }
+        function skipRest() { 
+    if (restTimerInterval) clearInterval(restTimerInterval); 
+    isResting=false; 
+    document.getElementById('rest-timer-modal').classList.add('hidden'); 
+    nextSet(); 
+}
         function previousSet() { if(isResting)return; if(currentSetIndex>0)currentSetIndex--; else if(currentExerciseIndex>0){currentExerciseIndex--;currentSetIndex=currentWorkout.exercises[currentExerciseIndex].series.length-1;} updateLiveWorkoutDisplay(); }
         function nextSet(manual=false) { if(isResting&&manual)return; const ex=currentWorkout.exercises[currentExerciseIndex]; if(currentSetIndex<ex.series.length-1)currentSetIndex++; else if(currentExerciseIndex<currentWorkout.exercises.length-1){currentExerciseIndex++;currentSetIndex=0;} updateLiveWorkoutDisplay(); }
         function showEditExerciseModal() { const ex = currentWorkout.exercises[currentExerciseIndex]; document.getElementById('modal-exercise-name').value = ex.name; document.getElementById('modal-exercise-rest').value = ex.rest; document.getElementById('edit-exercise-modal').classList.remove('hidden'); }
