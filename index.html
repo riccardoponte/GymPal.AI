@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -505,13 +506,73 @@
         #exercise-picker-list .workout-card.completed { background-color: #166534; }
         #exercise-picker-list .workout-card.completed .workout-info h3 { text-decoration: line-through; opacity: 0.7; }
 
+        /* Light Mode Styles */
+        body.light-mode {
+            background-color: #f0f2f5;
+            color: #18181b;
+        }
+        .light-mode .app-container, .light-mode .header, .light-mode .bottom-nav {
+            background-color: #ffffff;
+            border-color: #e5e7eb;
+        }
+        .light-mode .header h1 {
+            color: #18181b;
+        }
+        .light-mode .stat-card, .light-mode .workout-card, .light-mode .exercise-builder-card,
+        .light-mode .live-workout-card, .light-mode .modal-content, .light-mode .tabs {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+        }
+        .light-mode .stat-card h3, .light-mode .workout-info p, .light-mode .series-list .series-header span,
+        .light-mode .series-list .series-item-label, .light-mode .nav-item, .light-mode .set-item .set-info p,
+        .light-mode .set-actions .note-btn {
+            color: #6b7280;
+        }
+        .light-mode .workout-card:hover {
+            background-color: #f9fafb;
+        }
+        .light-mode .workout-icon, .light-mode .set-item, .light-mode .btn-secondary {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .light-mode .form-input, .light-mode .set-item .set-input {
+            background-color: #f9fafb;
+            color: #18181b;
+            border-color: #d1d5db;
+        }
+        .light-mode .form-input:focus, .light-mode .set-item .set-input:focus {
+            border-color: #f86b06;
+        }
+        .light-mode .tab {
+            color: #6b7280;
+        }
+        .light-mode .nav-item svg {
+            stroke: #6b7280;
+        }
+        .light-mode .nav-item.active, .light-mode .nav-item.active svg {
+            color: #f86b06;
+            stroke: #f86b06;
+        }
+         .light-mode .set-item.current {
+            border: 2px solid #374151;
+        }
+        .light-mode .close-btn {
+            color: #374151;
+        }
+        .light-mode .header-btn {
+            color: #f86b06;
+        }
     </style>
 </head>
-<body>
+<body class="">
     <div class="app-container">
         <!-- Home Screen -->
         <div id="home-screen" class="screen active">
-            <div class="header"><div style="width: 70px;"></div><h1>GymBro</h1><div style="width: 70px;"></div></div>
+            <div class="header">
+                <div style="width: 70px;"></div>
+                <h1>GymBro</h1>
+                <button class="header-btn" id="theme-toggle-btn" onclick="toggleTheme()" style="font-size: 24px; min-width: 70px;">☀️</button>
+            </div>
             <div class="content">
                 <h2 style="margin-bottom: 16px; font-size: 22px;">Statistiche</h2>
                 <div class="stats-grid">
@@ -626,6 +687,7 @@
         // completedWorkout = { ...workout, date, duration, performance: {'exIdx-setIdx': {reps, weight, note}} }
         
         const DB_KEY = 'GymBro_workouts_it_v2';
+        const THEME_KEY = 'GymBro_theme_it';
         const GEMINI_API_KEY = 'AIzaSyAipeUNqXwvgZDOM9L2I602ARsw5jaGxKg';
         let workouts = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
         let currentWorkout = null, editingWorkoutId = null; 
@@ -638,9 +700,34 @@
         let restAudio = null;
         
         document.addEventListener('DOMContentLoaded', () => {
-    updateAllScreens();
-    initializeAudio();
-});
+            initializeTheme();
+            updateAllScreens();
+            initializeAudio();
+        });
+
+        function initializeTheme() {
+            const savedTheme = localStorage.getItem(THEME_KEY) || 'dark';
+            setTheme(savedTheme);
+        }
+
+        function setTheme(theme) {
+            const body = document.body;
+            const toggleBtn = document.getElementById('theme-toggle-btn');
+            if (theme === 'light') {
+                body.classList.add('light-mode');
+                toggleBtn.innerHTML = '🌙';
+            } else {
+                body.classList.remove('light-mode');
+                toggleBtn.innerHTML = '☀️';
+            }
+        }
+
+        function toggleTheme() {
+            const currentTheme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+            localStorage.setItem(THEME_KEY, newTheme);
+        }
         
         function initializeAudio() {
     try {
@@ -720,7 +807,18 @@ function updateAllScreens() {
             const container = document.getElementById('recent-workouts');
             const recent = workouts.filter(w => !w.isTemplate).slice(0, 5);
             if (recent.length === 0) { container.innerHTML = '<p style="text-align: center; color: #a1a1aa; padding: 24px;">Nessun allenamento recente.</p>'; return; }
-            container.innerHTML = recent.map(w => `<div class="workout-card" onclick="showWorkoutDetail('${w.id}')"><div class="workout-icon">💪</div><div class="workout-info"><h3>${w.name}</h3><p>${w.exercises.length} esercizi • ${w.duration || 'N/D'} min</p></div><button class="btn btn-icon" onclick="event.stopPropagation(); startWorkoutFromHome('${w.id}')" style="width: auto; margin: 0; padding: 8px 16px;">Inizia</button></div>`).join('');
+            container.innerHTML = recent.map(w => `
+                <div class="workout-card" onclick="showWorkoutDetail('${w.id}')">
+                    <div class="workout-icon">💪</div>
+                    <div class="workout-info">
+                        <h3>${w.name}</h3>
+                        <p>${w.exercises.length} esercizi • ${w.duration || 'N/D'} min</p>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-icon" onclick="event.stopPropagation(); startWorkoutFromHome('${w.id}')" style="width: auto; margin: 0; padding: 8px 16px;">Inizia</button>
+                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteCompletedWorkout('${w.id}')" style="width: auto; margin: 0; padding: 8px 12px;">X</button>
+                    </div>
+                </div>`).join('');
         }
         
         function renderMyWorkouts() {
@@ -750,6 +848,14 @@ function updateAllScreens() {
             }
         }
 
+        function deleteCompletedWorkout(workoutId) {
+            if (confirm('Sei sicuro di voler eliminare questo workout completato? L\'azione è irreversibile.')) {
+                workouts = workouts.filter(w => w.id !== workoutId);
+                localStorage.setItem(DB_KEY, JSON.stringify(workouts));
+                updateAllScreens();
+            }
+        }
+
         function renderWorkoutHistory() {
             const container = document.getElementById('workout-history');
             const completed = workouts.filter(w => !w.isTemplate).sort((a,b) => new Date(b.date) - new Date(a.date));
@@ -761,7 +867,21 @@ function updateAllScreens() {
                 let key = (d.getTime() === today.getTime()) ? 'Oggi' : (d.getTime() === y.getTime()) ? 'Ieri' : d.toLocaleDateString('it-IT', {year: 'numeric', month: 'long', day: 'numeric'});
                 if (!acc[key]) acc[key] = []; acc[key].push(w); return acc;
             }, {});
-            container.innerHTML = Object.entries(grouped).map(([date, wList]) => `<div style="margin-bottom: 24px;"><h3 style="margin-bottom: 12px; font-size: 18px;">${date}</h3>${wList.map(w => `<div class="workout-card" onclick="showWorkoutDetail('${w.id}')"><div class="workout-icon">💪</div><div class="workout-info"><h3>${w.name}</h3><p>${new Date(w.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})} • ${w.duration} min</p></div></div>`).join('')}</div>`).join('');
+            container.innerHTML = Object.entries(grouped).map(([date, wList]) => `
+                <div style="margin-bottom: 24px;">
+                    <h3 style="margin-bottom: 12px; font-size: 18px;">${date}</h3>
+                    ${wList.map(w => `
+                        <div class="workout-card" onclick="showWorkoutDetail('${w.id}')">
+                            <div class="workout-icon">💪</div>
+                            <div class="workout-info">
+                                <h3>${w.name}</h3>
+                                <p>${new Date(w.date).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'})} • ${w.duration} min</p>
+                            </div>
+                            <div class="actions">
+                                <button class="btn btn-danger" onclick="event.stopPropagation(); deleteCompletedWorkout('${w.id}')" style="width: auto; margin: 0; padding: 8px 12px;">X</button>
+                            </div>
+                        </div>`).join('')}
+                </div>`).join('');
         }
 
         function addExerciseToBuilder() {
