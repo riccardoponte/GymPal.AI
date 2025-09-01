@@ -1017,10 +1017,10 @@ function updateAllScreens() {
                 return `<div class="set-item ${isCompleted?'completed':''} ${sIdx===currentSetIndex?'current':''} ${isResting?'disabled':''}">
                     <div class="set-item-main">
                         <div class="set-info"><h4>Serie ${sIdx + 1}</h4><p>${serie.reps} rep ${isCompleted?`(eff: ${perf.reps})`:''}</p></div>
-                        <div class="set-input-group"><input type="number" class="set-input" id="live-weight-${key}" value="${w}" ${isCompleted?'disabled':''}> kg</div>
+                        <div class="set-input-group"><input type="number" class="set-input" id="live-weight-${key}" value="${w}"> kg</div>
                         <div class="set-actions">
                            <button class="note-btn" onclick="toggleNoteInput('${key}')">💬</button>
-                           <button class="complete-btn" onclick="completeSet(${currentExerciseIndex}, ${sIdx})" ${isCompleted?'disabled':''}>${isCompleted?'✓':''}</button>
+                           <button class="complete-btn" onclick="completeSet(${currentExerciseIndex}, ${sIdx})">${isCompleted?'✓':''}</button>
                         </div>
                     </div>
                     <input type="text" class="set-note-input hidden" id="live-note-${key}" placeholder="Nota per la serie..." value="${note}">
@@ -1034,8 +1034,15 @@ function updateAllScreens() {
 
         function toggleNoteInput(key) { document.getElementById(`live-note-${key}`).classList.toggle('hidden'); }
         function completeSet(exIdx, setIdx) {
-            const key = `${exIdx}-${setIdx}`; if (performanceData[key]) return;
+            const key = `${exIdx}-${setIdx}`;
+            const isCompleted = !!performanceData[key];
             performanceData[key] = { reps: currentWorkout.exercises[exIdx].series[setIdx].reps, weight: parseFloat(document.getElementById(`live-weight-${key}`).value) || 0, note: document.getElementById(`live-note-${key}`).value.trim() };
+
+            if (isCompleted) {
+                updateLiveWorkoutDisplay();
+                return;
+            }
+
             const isLastSet = setIdx === currentWorkout.exercises[exIdx].series.length - 1, isLastEx = exIdx === currentWorkout.exercises.length - 1;
             if (isLastSet && isLastEx) nextSet();
             else startRestTimer();
@@ -1070,6 +1077,7 @@ function updateAllScreens() {
                 }
                 
                 if (timeLeft <= 0) {
+                    clearInterval(restTimerInterval);
                     if (restAudio) restAudio.play();
                     setTimeout(skipRest, 1000);
                 }
@@ -1093,7 +1101,12 @@ function updateAllScreens() {
         function finishWorkout() {
             if (timerInterval) clearInterval(timerInterval);
             const duration = Math.max(1, Math.floor((Date.now() - workoutStartTime) / 60000));
-            document.querySelectorAll('.set-note-input:not(.hidden)').forEach(input => { const key = input.id.replace('live-note-', ''); if (performanceData[key]) performanceData[key].note = input.value.trim(); });
+            document.querySelectorAll('.set-note-input').forEach(input => {
+                const key = input.id.replace('live-note-', '');
+                if (performanceData[key]) {
+                    performanceData[key].note = input.value.trim();
+                }
+            });
             const finished = { ...currentWorkout, id: Date.now().toString(), date: new Date().toISOString(), duration, isTemplate: false, performance: performanceData };
             workouts.unshift(finished);
             localStorage.setItem(DB_KEY, JSON.stringify(workouts));
